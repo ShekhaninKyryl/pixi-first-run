@@ -92,7 +92,6 @@ export class Sheep {
 
   assignToGroup(hero: Hero) {
     if (!this._view) return;
-    console.log(hero.group.children.length);
     if (hero.group.children.length >= hero.maxGroupSize) return;
     const sheepPosition = this._view.position;
     const heroPosition = hero.view.position;
@@ -112,16 +111,14 @@ export class Sheep {
 
   isInTheFarm(farm: Farm) {
     if (!this._view) return;
-    const farmPosition = farm.view.position;
+
     const groupPosition = this._view.parent.parent.position;
     const sheepPosition = this._view;
 
-    const dX = farmPosition.x - (groupPosition.x + sheepPosition.x);
-    const dY = farmPosition.y - (groupPosition.y + sheepPosition.y);
-
-    const isFitX = Math.abs(dX) < farm.view.width / 2;
-    const isFitY = Math.abs(dY) < farm.view.height / 2;
-    return isFitX && isFitY;
+    return farm.isInTheFarm(
+      groupPosition.x + sheepPosition.x,
+      groupPosition.y + sheepPosition.y,
+    );
   }
 
   kill(resolve?: () => void) {

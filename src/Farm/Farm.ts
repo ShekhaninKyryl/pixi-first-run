@@ -14,6 +14,18 @@ export class Farm {
     this._view = new FarmView(option);
   }
 
+  isInTheFarm(x: number, y: number, deviation = 0) {
+    if (!this._view) return;
+    const farmPosition = this.view.position;
+
+    const dX = farmPosition.x - x;
+    const dY = farmPosition.y - y;
+
+    const isFitX = Math.abs(dX) - deviation < this.view.width / 2;
+    const isFitY = Math.abs(dY) - deviation < this.view.height / 2;
+    return isFitX && isFitY;
+  }
+
   get view() {
     return this._view;
   }

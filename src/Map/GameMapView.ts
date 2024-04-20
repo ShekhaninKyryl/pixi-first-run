@@ -5,7 +5,7 @@ import { Circle } from "../Shapes/Circle";
 export class GameMapView extends Container {
   constructor(width: number, height: number) {
     super();
-    this.addChild(this.drawCircle(width, height, 0x8cab80).shape);
+    this.addChild(this.drawSquare(width, height, 0x8cab80).shape);
     this.pivot.set(width / 2, height / 2);
     this.position.set(width / 2, height / 2);
   }

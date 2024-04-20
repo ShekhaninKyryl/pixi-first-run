@@ -13,6 +13,7 @@ export class GameMap {
   farm: Farm;
   ui: UI;
   sheeps: Sheep[];
+  maxSheepsPopulation: number;
 
   constructor({ size, ui }: TGameMapOption) {
     this._view = new GameMapView(size.width, size.height);
@@ -28,13 +29,11 @@ export class GameMap {
     });
     this.ui = ui;
     this.sheeps = [];
+    this.maxSheepsPopulation = 10;
     this.drawChild();
 
-    for (let i = 0; i < 10; i++) {
-      const deviationX = (Math.random() - Math.random()) * 200;
-      const deviationY = (Math.random() - Math.random()) * 200;
-      const { x, y } = this._view;
-      this.spawnSheep(new Point(x + deviationX, y + deviationY));
+    for (let i = 0; i < this.maxSheepsPopulation; i++) {
+      this.spawnSheep();
     }
   }
 
@@ -42,10 +41,28 @@ export class GameMap {
     this._view.addChild(this.farm.view, this.hero.view);
   }
 
-  private spawnSheep(position: Point) {
-    const sheep = new Sheep({ position });
+  private spawnSheep() {
+    const sheep = new Sheep({
+      position: this.getSpawnPosition(),
+    });
     if (sheep.view) this._view.addChildAt(sheep.view, 2);
     this.sheeps.push(sheep);
+  }
+
+  private getSpawnPosition(): Point {
+    const deviationX = (Math.random() - Math.random()) * (this._view.width / 2);
+    const deviationY =
+      (Math.random() - Math.random()) * (this._view.height / 2);
+    const { x, y } = this._view;
+
+    const spawnPos = new Point(x + deviationX, y + deviationY);
+    return this.farm.isInTheFarm(
+      spawnPos.x,
+      spawnPos.y,
+      this._view.height * 0.1,
+    )
+      ? this.getSpawnPosition()
+      : spawnPos;
   }
 
   public subscribeForEvents(ticker: Ticker) {
