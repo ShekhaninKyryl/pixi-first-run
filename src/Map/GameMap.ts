@@ -49,6 +49,16 @@ export class GameMap {
     this.sheeps.push(sheep);
   }
 
+  /**
+   *
+   * @param time - use ticker last time;
+   * @param modBase - increase value to reduce true chance
+   * @returns
+   */
+  private randomByTime(time: number, modBase = 2) {
+    return !Boolean(time % modBase);
+  }
+
   private getSpawnPosition(): Point {
     const deviationX = (Math.random() - Math.random()) * (this._view.width / 2);
     const deviationY =
@@ -108,6 +118,10 @@ export class GameMap {
         .forEach((s) => s.kill(() => this.ui.score++));
 
       this.sheeps = this.sheeps.filter((s) => !s.killed);
+
+      if (this.sheeps.length < this.maxSheepsPopulation) {
+        if (this.randomByTime(ticker.lastTime, 20)) this.spawnSheep();
+      }
     });
   }
 
