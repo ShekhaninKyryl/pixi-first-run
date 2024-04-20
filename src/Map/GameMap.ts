@@ -43,7 +43,7 @@ export class GameMap {
 
   private spawnSheep() {
     const sheep = new Sheep({
-      position: this.getSpawnPosition(),
+      position: this.getSafePosition(),
     });
     if (sheep.view) this._view.addChildAt(sheep.view, 2);
     this.sheeps.push(sheep);
@@ -59,7 +59,7 @@ export class GameMap {
     return !Boolean(time % modBase);
   }
 
-  private getSpawnPosition(): Point {
+  private getSafePosition(): Point {
     const deviationX = (Math.random() - Math.random()) * (this._view.width / 2);
     const deviationY =
       (Math.random() - Math.random()) * (this._view.height / 2);
@@ -71,7 +71,7 @@ export class GameMap {
       spawnPos.y,
       this._view.height * 0.1,
     )
-      ? this.getSpawnPosition()
+      ? this.getSafePosition()
       : spawnPos;
   }
 
@@ -93,12 +93,12 @@ export class GameMap {
       ];
 
       handlersTicker.map((hT, index) => {
-        const originalFunction = handlersMap.get(index);
+        const originalFunction = handlersMap.get(`pointerdown_${index}`);
 
         if (originalFunction) {
           ticker.remove(originalFunction);
         }
-        handlersMap.set(index, hT);
+        handlersMap.set(`pointerdown_${index}`, hT);
         ticker.add(hT);
       });
     });
@@ -122,6 +122,27 @@ export class GameMap {
       if (this.sheeps.length < this.maxSheepsPopulation) {
         if (this.randomByTime(ticker.lastTime, 20)) this.spawnSheep();
       }
+
+      this.sheeps.forEach((sheep, index) => {
+        if (
+          !sheep.isMoving &&
+          !sheep.locked &&
+          !handlersMap.get(`sheep_motion_${index}`) &&
+          this.randomByTime(ticker.lastTime, 5)
+        ) {
+          handlersMap.set(`sheep_motion_${index}`, true);
+          const tickerCallback = sheep.patrol(
+            ticker,
+            this.getSafePosition(),
+            this.farm,
+            () => {
+              sheep.isMoving = false;
+              handlersMap.delete(`sheep_motion_${index}`);
+            },
+          );
+          if (sheep.locked) ticker.remove(tickerCallback);
+        }
+      });
     });
   }
 

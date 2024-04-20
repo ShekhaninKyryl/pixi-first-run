@@ -23,6 +23,7 @@ export class Sheep {
   followRadius: number;
   locked: boolean;
   killed: boolean;
+  isMoving: boolean;
 
   constructor({ position }: TSheepOption) {
     this._view = new SheepView({ position });
@@ -30,6 +31,7 @@ export class Sheep {
     this.followRadius = 30;
     this.locked = false;
     this.killed = false;
+    this.isMoving = false;
     this.followRadiusView = new Graphics();
     this._view.addChild(this.followRadiusView);
 
@@ -48,29 +50,44 @@ export class Sheep {
         .fill(color);
   }
 
-  // moveToPoint(time: Ticker, position: PointData, finish: () => {}) {
+  patrol(ticker: Ticker, position: PointData, farm: Farm, finish: () => void) {
+    this.isMoving = true;
 
-  //   const sheepPosition = this._view.position;
+    const moveTickerCallback = () => {
+      if (!this._view || this.locked) return;
+      const sheepPosition = this._view.position;
 
-  //   const dX = position.x - sheepPosition.x;
-  //   const dY = position.y - sheepPosition.y;
+      const dX = position.x - sheepPosition?.x;
+      const dY = position.y - sheepPosition?.y;
 
-  //   if (dX === 0 && dY === 0) {
-  //     finish();
-  //     return;
-  //   }
+      if (dX === 0 && dY === 0) {
+        finish();
+        ticker.remove(moveTickerCallback);
+        return;
+      }
 
-  //   const ratioX = dX / Math.sqrt(dX ** 2 + dY ** 2);
-  //   const ratioY = dY / Math.sqrt(dX ** 2 + dY ** 2);
+      const ratioX = dX / Math.sqrt(dX ** 2 + dY ** 2);
+      const ratioY = dY / Math.sqrt(dX ** 2 + dY ** 2);
 
-  //   this._view.x += ratioX * this.speed * time.deltaTime;
-  //   this._view.y += ratioY * this.speed * time.deltaTime;
+      this._view.x += ratioX * this.speed * ticker.deltaTime;
+      this._view.y += ratioY * this.speed * ticker.deltaTime;
 
-  //   // remove trottling;
-  //   const ndX = position.x - this._view.position.x;
-  //   const ndY = position.y - this._view.position.y;
-  //   if (dX * ndX < 0 || dY * ndY < 0) this.view.position = position;
-  // }
+      if (this.isInTheFarm(farm, 100)) {
+        this._view.x -= ratioX * this.speed * ticker.deltaTime;
+        this._view.y -= ratioY * this.speed * ticker.deltaTime;
+        finish();
+        ticker.remove(moveTickerCallback);
+        return;
+      }
+      // remove trottling;
+      const ndX = position.x - this._view.position.x;
+      const ndY = position.y - this._view.position.y;
+      if (dX * ndX < 0 || dY * ndY < 0) this._view.position = position;
+    };
+
+    ticker.add(moveTickerCallback);
+    return moveTickerCallback;
+  }
 
   isTamed(hero: Hero) {
     if (this.locked || !this._view) return;
@@ -109,7 +126,7 @@ export class Sheep {
     // todo: add logic to follow hero;
   }
 
-  isInTheFarm(farm: Farm) {
+  isInTheFarm(farm: Farm, deviation = 0) {
     if (!this._view) return;
 
     const groupPosition = this._view.parent.parent.position;
@@ -118,6 +135,7 @@ export class Sheep {
     return farm.isInTheFarm(
       groupPosition.x + sheepPosition.x,
       groupPosition.y + sheepPosition.y,
+      deviation,
     );
   }
 

@@ -17,7 +17,7 @@ export class Hero {
     this.group = new Container({ isRenderGroup: true, position });
     this._view.addChild(this.group);
     this.maxGroupSize = 5;
-    this.speed = 2;
+    this.speed = 4;
   }
 
   get heroWidth() {
