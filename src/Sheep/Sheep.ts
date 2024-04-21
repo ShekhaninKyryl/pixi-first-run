@@ -1,5 +1,4 @@
 import {
-  Color,
   ColorSource,
   Container,
   Graphics,
@@ -123,14 +122,54 @@ export class Sheep {
   }
 
   followHero(hero: Hero) {
-    // todo: add logic to follow hero;
+    if (!this._view || !this._view.parent || !this._view.parent.parent) return;
+
+    // Extract positions
+    const sheepPosition = this._view.position;
+    const heroPosition = hero.view.position;
+    const heroPrevPosition = hero.heroPrevPosition
+      ? hero.heroPrevPosition
+      : heroPosition;
+
+    // Calculate distance between sheep position and group/hero position (local = 0,0)
+    const distance = Math.sqrt(sheepPosition.x ** 2 + sheepPosition.y ** 2);
+
+    // Calculate the threshold distance
+    const thresholdDistance =
+      hero.heroWidth / 2 + this._view.width / 2 + this.followRadius;
+
+    const dx = heroPrevPosition.x - heroPosition.x;
+    const dy = heroPrevPosition.y - heroPosition.y;
+
+    console.log(dx);
+    // Check if sheep is within threshold distance
+    if (distance < thresholdDistance) {
+      // Update sheep position to show sheep stable;
+
+      console.log("distance<");
+
+      this._view.x += dx;
+      this._view.y += dy;
+    } else {
+      console.log("distance>");
+
+      const magnitude = Math.sqrt(dx ** 2 + dy ** 2);
+      const direction = new Point(dx / magnitude, dy / magnitude);
+
+      // Calculate the new position based on speed
+      const newPositionX = sheepPosition.x + direction.x * this.speed;
+      const newPositionY = sheepPosition.y + direction.y * this.speed;
+
+      // Update sheep position
+      this._view.position.set(newPositionX, newPositionY);
+    }
   }
 
   isInTheFarm(farm: Farm, deviation = 0) {
     if (!this._view) return;
 
     const groupPosition = this._view.parent.parent.position;
-    const sheepPosition = this._view;
+    const sheepPosition = this._view.position;
 
     return farm.isInTheFarm(
       groupPosition.x + sheepPosition.x,

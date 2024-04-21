@@ -27,6 +27,7 @@ export class GameMap {
         height: 200,
       },
     });
+
     this.ui = ui;
     this.sheeps = [];
     this.maxSheepsPopulation = 10;
@@ -111,6 +112,12 @@ export class GameMap {
           this.sheeps[index].assignToGroup(this.hero)?.lock();
         });
       }
+
+      // TODO: fix disapearing sheeps
+      // this.sheeps
+      //   .filter((s) => s.locked)
+      //   .forEach((s) => s.followHero(this.hero));
+      this.hero.setPrevPoint();
 
       this.sheeps
         .filter((s) => !s.killed)

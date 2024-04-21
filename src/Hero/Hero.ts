@@ -1,4 +1,4 @@
-import { Container, PointData, Ticker } from "pixi.js";
+import { Container, Point, PointData, Ticker } from "pixi.js";
 import { HeroView } from "./HeroView";
 
 export type THeroOption = {
@@ -11,6 +11,7 @@ export class Hero {
   group: Container;
   maxGroupSize: number;
   speed: number;
+  heroPrevPosition?: Point;
 
   constructor({ position }: THeroOption) {
     this._view = new HeroView({ position });
@@ -45,6 +46,10 @@ export class Hero {
     const ndX = position.x - this._view.position.x;
     const ndY = position.y - this._view.position.y;
     if (dX * ndX < 0 || dY * ndY < 0) this.view.position = position;
+  }
+
+  setPrevPoint() {
+    this.heroPrevPosition = this._view.position.clone();
   }
 
   get view() {
